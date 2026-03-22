@@ -15,10 +15,6 @@ To trigger automatic posting, this file needs to be executed regularly. Options:
 
 if ( basename( $_SERVER['PHP_SELF'] ) === 'social.php' ) {
 	http_response_code( 404 );
-	$root = $_SERVER['DOCUMENT_ROOT'];
-	if ( file_exists( $root . '/404.html' ) ) {
-		include $root . '/404.html';
-	}
 	exit;
 }
 
@@ -53,12 +49,13 @@ $li_person_id     = '';
 $li_org_id        = '';  // Optional. Leave blank to skip org posting.
 $li_access_token  = '';
 
-// Pinterest: run ?setup=pinterest&key=KEY to get your token.
-// Tokens expire every 30 days. Re-run setup to refresh.
-$pi_app_id       = '';
-$pi_app_secret   = '';
-$pi_board_id     = '';  // Shown on first connect. Change to any board you own.
-$pi_access_token = '';
+// Pinterest: run ?setup=pinterest&key=KEY to get your tokens.
+// Access token expires every 30 days. Run ?setup=pinterest_refresh&key=KEY to get a new one.
+$pi_app_id        = '';
+$pi_app_secret    = '';
+$pi_board_id      = '';  // Shown on first connect. Change to any board you own.
+$pi_access_token  = '';
+$pi_refresh_token = '';
 
 // Reddit: run ?setup=reddit&key=KEY to get your tokens.
 // Access token expires in 1 hour. Run ?setup=reddit_refresh&key=KEY to get a new one.
@@ -325,6 +322,23 @@ if ( $setup ) {
 		exit;
 	}
 
+	if ( $setup === 'pinterest_refresh' ) {
+		if ( !$pi_refresh_token ) { echo 'No refresh token set in social.php.'; exit; }
+		$r    = social_curl( 'https://api.pinterest.com/v5/oauth/token', http_build_query( [
+			'grant_type'    => 'refresh_token',
+			'refresh_token' => $pi_refresh_token,
+		] ), [
+			'Authorization: Basic ' . base64_encode( $pi_app_id . ':' . $pi_app_secret ),
+			'Content-Type: application/x-www-form-urlencoded',
+		] );
+		$data = json_decode( $r['body'], true );
+		if ( empty( $data['access_token'] ) ) { echo 'Error: could not refresh token. Re-run ?setup=pinterest&key=KEY to re-authorize.'; exit; }
+		echo 'New Pinterest access token: ' . $data['access_token'];
+		if ( !empty( $data['refresh_token'] ) ) echo '<br>New Pinterest refresh token: ' . $data['refresh_token'];
+		echo '<br>Paste these into $pi_access_token and $pi_refresh_token in social.php.';
+		exit;
+	}
+
 	if ( $setup === 'reddit' && !$code ) {
 		$auth_url = 'https://www.reddit.com/api/v1/authorize?' . http_build_query( [
 			'client_id'     => $rd_client_id,
@@ -467,8 +481,23 @@ function social_linkedin_post( $args, $author_urn ) {
 }
 
 function post_to_pinterest( $args ) {
-	global $pi_access_token, $pi_board_id;
+	global $pi_app_id, $pi_app_secret, $pi_access_token, $pi_refresh_token, $pi_board_id;
 	if ( !$pi_access_token || !$pi_board_id || !$args['image_url'] ) return;
+	if ( $pi_refresh_token ) {
+		$r    = social_curl( 'https://api.pinterest.com/v5/oauth/token', http_build_query( [
+			'grant_type'    => 'refresh_token',
+			'refresh_token' => $pi_refresh_token,
+		] ), [
+			'Authorization: Basic ' . base64_encode( $pi_app_id . ':' . $pi_app_secret ),
+			'Content-Type: application/x-www-form-urlencoded',
+		] );
+		$data = json_decode( $r['body'], true );
+		if ( !empty( $data['access_token'] ) ) {
+			$pi_access_token  = $data['access_token'];
+			$pi_refresh_token = $data['refresh_token'] ?? $pi_refresh_token;
+			social_log( 'Pinterest', 0, 'Token refreshed.' );
+		}
+	}
 	$r = social_curl( 'https://api.pinterest.com/v5/pins', json_encode( [
 		'board_id'     => $pi_board_id,
 		'title'        => $args['title'],

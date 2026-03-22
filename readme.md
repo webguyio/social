@@ -279,7 +279,7 @@ $li_access_token = '[LINKEDIN-ACCESS-TOKEN]';
 
 ### Token expiry
 
-Tokens expire after exactly 60 days. There is no way to extend them for basic apps (the full OAuth flow must be repeated). The plugin shows a countdown in the LinkedIn settings panel and warns when expiry is approaching. Set a calendar reminder to reconnect every 60 days.
+Tokens expire after exactly 60 days. There is no way to extend them for basic apps (the full OAuth flow must be repeated). Set a calendar reminder to reconnect every 60 days. The plugin's LinkedIn settings panel shows a countdown to token expiry — the counter turns orange at 14 days and red at 7 days.
 
 Refresh tokens (which would allow automatic renewal) are only available to Marketing Developer Platform partners (not available to standard developer apps).
 
@@ -525,11 +525,12 @@ X will return 403 for duplicate content if you test the same post URL twice. Use
 
 Once all platforms are configured:
 
-1. Delete `social.txt` in the script directory to reset the timestamp
-2. Visit the page that includes or triggers social.php
-3. Check `social.log` for results (enable logging first by setting `define( 'SOCIAL_LOG', true );`)
+1. Enable logging by setting `define( 'SOCIAL_LOG', true );` in social.php
+2. Delete `social.txt` in the script directory if it exists (this resets the timestamp)
+3. Visit the page that includes or triggers social.php
+4. Check `social.log` for results
 
-To re-test the same post, delete `social.txt` again. For X duplicate content testing, use different article URLs.
+To re-test, delete `social.txt` again. Note: on first run (no `social.txt`), the script posts the most recent RSS item regardless of its publish date, then exits. Subsequent runs post only items newer than the last run. For X duplicate content testing, use different article URLs.
 
 To send a custom message to all connected platforms at any time, visit `https://yoursite.com/social.php?key=[SOCIAL-KEY-HERE]` (this shows a broadcast form. The message is sent immediately on submit).
 
@@ -571,7 +572,7 @@ Same format, written to `social.log` in the script directory.
 
 ## Troubleshooting: social.php file permissions
 
-`social.txt` and `social.log` must be writable by the web server user (typically `www-data`).
+`social.txt` and `social.log` must be writable by the web server user (typically `www-data`). `social.txt` stores the last-posted timestamp and is always created on first run. `social.log` is only created if `SOCIAL_LOG` is set to `true`.
 
 Check ownership:
 ```bash
@@ -595,7 +596,7 @@ chown www-data:www-data /path/to/social.log
 | Facebook (page token) | Never (normally) | Re-run auth if invalidated |
 | Instagram | Shares Facebook page token | Same as Facebook |
 | LinkedIn | 60 days | No (re-authenticate manually) |
-| Pinterest (access) | 30 days | Yes, via refresh token |
-| Pinterest (refresh) | 60 days | Yes, continuously |
+| Pinterest (access) | 30 days | Yes, automatically via refresh token |
+| Pinterest (refresh) | 60 days | Yes, as long as at least one post goes out every 60 days |
 | Reddit (access) | 1 hour | Yes, automatically via refresh token |
 | Reddit (refresh) | Long-lived | Until revoked |
