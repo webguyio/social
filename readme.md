@@ -379,13 +379,13 @@ Reddit is the most restrictive platform for automated posting. API access requir
 
 ### API access approval
 
-As of late 2024, Reddit removed self-service API access. You must submit an application and wait for approval. Personal/low-volume use is typically approved within a few days. Commercial use (including monetized WordPress plugins) requires explicit approval and may cost $12,000+/year for enterprise access.
+As of November 2025, Reddit no longer offers self-service API access. You must apply for approval via Reddit's Developer Support form at [support.reddithelp.com/hc/en-us/requests/new?ticket_form_id=14868593862164](https://support.reddithelp.com/hc/en-us/requests/new?ticket_form_id=14868593862164) before you can create an app or use the API. Reddit's target response time is 7 days. If you have existing OAuth credentials from before November 2025, they continue to work.
 
 When applying, describe your use case accurately. "Auto-posting blog articles to my own subreddit for community building" is a valid personal use case. Be specific about your posting frequency and that you are only posting to a subreddit you own.
 
 ### 1. Create a Reddit app
 
-- Log in to Reddit and go to [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps)
+- Once approved, log in to Reddit and go to [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps)
 - Scroll to the bottom and click **create another app**
 - Enter a name
 - Select **web app** as the type (not script, script apps only work for your own account and break with 2FA)
@@ -441,7 +441,7 @@ Reddit requires a specific User-Agent format and **blocks generic strings**. The
 | 200 but post disappears | AutoModerator removal | Check subreddit mod log; disable flair requirements |
 | SUBMIT_VALIDATION_FLAIR_REQUIRED | Subreddit requires flair | Disable flair requirement in mod settings |
 | 429 Too Many Requests | Rate limit (100 req/min) | Plugin spaces requests; don't call the API manually in parallel |
-| Auth fails | API access not approved | Check approval status at reddit.com/prefs/apps |
+| Auth fails | API access not approved | Apply at support.reddithelp.com/hc/en-us/requests/new?ticket_form_id=14868593862164 |
 
 ---
 
@@ -449,7 +449,7 @@ Reddit requires a specific User-Agent format and **blocks generic strings**. The
 
 ### Pricing
 
-X API posting costs **$0.01 per post** on the pay-per-use model. You must purchase a minimum of **$5 in credits** under Billing > Credits before any posts will go through. There is no monthly subscription required (credits are consumed as you post).
+X API posting costs **$0.01 per post** on the pay-per-use model. There is no required monthly subscription (credits are consumed as you post). $5 is the minimum credit purchase without adding a card to billing, which covers 500 posts and is likely a one-time cost for most users. Purchase credits under Billing > Credits in the developer console before making your first post.
 
 Legacy tiers (Essential, Elevated, Free, Basic) have been deprecated in favor of the pay-per-use system. If you previously had a legacy account, your old apps may not appear in the new console at `console.x.com` and may need to be recreated.
 
