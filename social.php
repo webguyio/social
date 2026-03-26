@@ -18,17 +18,17 @@ if ( basename( $_SERVER['PHP_SELF'] ) === 'social.php' ) {
 	exit;
 }
 
-// Secret key protecting the broadcast form and all setup endpoints.
-define( 'SOCIAL_KEY', '' );
-
-// Set to true to enable logging to social.log.
-define( 'SOCIAL_LOG', false );
-
 // Your full site URL, no trailing slash.
 define( 'SOCIAL_SITE', '' );
 
 // RSS feed URL to check for new content.
 define( 'SOCIAL_RSS', '' );
+
+// Secret key protecting the broadcast form and all setup endpoints.
+define( 'SOCIAL_KEY', '' );
+
+// Set to true to enable logging to social.log.
+define( 'SOCIAL_LOG', false );
 
 // Facebook: run ?setup=facebook&key=KEY to get your page token.
 $fb_app_id       = '';
@@ -87,10 +87,10 @@ $redirect_rd = SOCIAL_SITE . '/social.php?setup=reddit&key=' . SOCIAL_KEY;
 if ( !$setup && SOCIAL_KEY && $key === SOCIAL_KEY ) {
 	$sent = false;
 	if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
-		$text  = trim( $_POST['text'] ?? '' );
-		$url   = trim( $_POST['url'] ?? '' );
-		$img   = trim( $_POST['image_url'] ?? '' );
-		$only  = isset( $_POST['platforms'] ) ? (array) $_POST['platforms'] : [];
+		$text = trim( $_POST['text'] ?? '' );
+		$url  = trim( $_POST['url'] ?? '' );
+		$img  = trim( $_POST['image_url'] ?? '' );
+		$only = isset( $_POST['platforms'] ) ? (array) $_POST['platforms'] : [];
 		if ( $text || $url || $img ) {
 			$args = [
 				'text'      => $text ?: $url,
@@ -112,78 +112,79 @@ if ( !$setup && SOCIAL_KEY && $key === SOCIAL_KEY ) {
 		'x'         => [ 'label' => 'X',         'needs_image' => false, 'needs_url' => false, 'connected' => $x_api_key && $x_access_token ],
 	];
 	$connected = array_filter( $platforms, fn( $p ) => $p['connected'] );
-	?><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>Send a Message</title>
-<style>
-body{font-family:sans-serif;max-width:520px;margin:60px auto;padding:0 20px}
-h2{margin-bottom:20px}
-label{display:block;margin-bottom:4px;font-size:14px;font-weight:600}
-input[type=text],input[type=url],textarea{width:100%;padding:8px 10px;font-size:15px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;margin-bottom:12px}
-textarea{height:100px;resize:vertical}
-.platforms{display:flex;flex-wrap:wrap;gap:8px 20px;margin-bottom:16px}
-.platform{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
-.platform.disabled{opacity:.4;pointer-events:none}
-button{padding:10px 24px;font-size:15px;cursor:pointer;background:#1a1a1a;color:#fff;border:0;border-radius:4px}
-button:hover{opacity:.85}
-.sent{color:green;margin-bottom:16px;font-weight:600}
-.none{color:#888;font-size:14px}
-</style>
-</head>
-<body>
-<h2>Send a Message</h2>
-<?php if ( $sent ) : ?><p class="sent">Sent.</p><?php endif; ?>
-<?php if ( $connected ) : ?>
-<form method="post">
-<label>Message <span style="font-weight:400;color:#888">(optional)</span></label>
-<textarea name="text" placeholder="Your message..."><?php echo htmlspecialchars( $_POST['text'] ?? '' ); ?></textarea>
-<label>URL <span style="font-weight:400;color:#888">(optional)</span></label>
-<input type="url" name="url" placeholder="https://..." value="<?php echo htmlspecialchars( $_POST['url'] ?? '' ); ?>">
-<label>Image URL <span style="font-weight:400;color:#888">(optional — required for Instagram and Pinterest)</span></label>
-<input type="url" name="image_url" id="img" placeholder="https://..." value="<?php echo htmlspecialchars( $_POST['image_url'] ?? '' ); ?>">
-<label>Platforms</label>
-<div class="platforms" id="platforms">
-<?php foreach ( $connected as $pid => $meta ) : ?>
-<label class="platform" id="p-<?php echo $pid; ?>"
-	data-needs-image="<?php echo $meta['needs_image'] ? '1' : '0'; ?>"
-	data-needs-url="<?php echo $meta['needs_url'] ? '1' : '0'; ?>">
-	<input type="checkbox" name="platforms[]" value="<?php echo $pid; ?>" checked>
-	<?php echo $meta['label']; ?>
-</label>
-<?php endforeach; ?>
-</div>
-<button type="submit">Send</button>
-</form>
-<script>
-(function() {
-	var url = document.querySelector('[name=url]');
-	var img = document.getElementById('img');
-	var labels = document.querySelectorAll('.platform');
-	function update() {
-		var hasUrl = url.value.trim() !== '';
-		var hasImg = img.value.trim() !== '';
-		labels.forEach(function(label) {
-			var needsUrl = label.dataset.needsUrl === '1';
-			var needsImg = label.dataset.needsImage === '1';
-			var disabled = (needsUrl && !hasUrl) || (needsImg && !hasImg);
-			label.classList.toggle('disabled', disabled);
-			label.querySelector('input').checked = !disabled;
-		});
-	}
-	url.addEventListener('input', update);
-	img.addEventListener('input', update);
-	update();
-})();
-</script>
-<?php else : ?>
-<p class="none">No platforms are connected. Add credentials to social.php to get started.</p>
-<?php endif; ?>
-</body>
-</html>
+	?>
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex, nofollow">
+		<title>Send a Message</title>
+		<style>
+		body{font-family:sans-serif;max-width:520px;margin:60px auto;padding:0 20px}
+		h2{margin-bottom:20px}
+		label{display:block;margin-bottom:4px;font-size:14px;font-weight:600}
+		input[type=text],input[type=url],textarea{width:100%;padding:8px 10px;font-size:15px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;margin-bottom:12px}
+		textarea{height:100px;resize:vertical}
+		.platforms{display:flex;flex-wrap:wrap;gap:8px 20px;margin-bottom:16px}
+		.platform{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+		.platform.disabled{opacity:.4;pointer-events:none}
+		button{padding:10px 24px;font-size:15px;cursor:pointer;background:#1a1a1a;color:#fff;border:0;border-radius:4px}
+		button:hover{opacity:.85}
+		.sent{color:green;margin-bottom:16px;font-weight:600}
+		.none{color:#888;font-size:14px}
+		</style>
+	</head>
+	<body>
+		<h2>Send a Message</h2>
+		<?php if ( $sent ) : ?><p class="sent">Sent.</p><?php endif; ?>
+		<?php if ( $connected ) : ?>
+		<form method="post">
+			<label>Message <span style="font-weight:400;color:#888">(optional)</span></label>
+			<textarea name="text" placeholder="Your message..."><?php echo htmlspecialchars( $_POST['text'] ?? '' ); ?></textarea>
+			<label>URL <span style="font-weight:400;color:#888">(optional)</span></label>
+			<input type="url" name="url" placeholder="https://..." value="<?php echo htmlspecialchars( $_POST['url'] ?? '' ); ?>">
+			<label>Image URL <span style="font-weight:400;color:#888">(optional — required for Instagram and Pinterest)</span></label>
+			<input type="url" name="image_url" id="img" placeholder="https://..." value="<?php echo htmlspecialchars( $_POST['image_url'] ?? '' ); ?>">
+			<label>Platforms</label>
+			<div class="platforms" id="platforms">
+			<?php foreach ( $connected as $pid => $meta ) : ?>
+				<label class="platform" id="p-<?php echo $pid; ?>"
+					data-needs-image="<?php echo $meta['needs_image'] ? '1' : '0'; ?>"
+					data-needs-url="<?php echo $meta['needs_url'] ? '1' : '0'; ?>">
+					<input type="checkbox" name="platforms[]" value="<?php echo $pid; ?>" checked>
+					<?php echo $meta['label']; ?>
+				</label>
+			<?php endforeach; ?>
+			</div>
+			<button type="submit">Send</button>
+		</form>
+		<script>
+		(function() {
+			var url = document.querySelector('[name=url]');
+			var img = document.getElementById('img');
+			var labels = document.querySelectorAll('.platform');
+			function update() {
+				var hasUrl = url.value.trim() !== '';
+				var hasImg = img.value.trim() !== '';
+				labels.forEach(function(label) {
+					var needsUrl = label.dataset.needsUrl === '1';
+					var needsImg = label.dataset.needsImage === '1';
+					var disabled = (needsUrl && !hasUrl) || (needsImg && !hasImg);
+					label.classList.toggle('disabled', disabled);
+					label.querySelector('input').checked = !disabled;
+				});
+			}
+			url.addEventListener('input', update);
+			img.addEventListener('input', update);
+			update();
+		})();
+		</script>
+		<?php else : ?>
+		<p class="none">No platforms are connected. Add credentials to social.php to get started.</p>
+		<?php endif; ?>
+	</body>
+	</html>
 	<?php
 	exit;
 }
@@ -299,7 +300,7 @@ if ( $setup ) {
 	}
 
 	if ( $setup === 'pinterest' && $code ) {
-		$r    = social_curl( 'https://api.pinterest.com/v5/oauth/token', http_build_query( [
+		$r = social_curl( 'https://api.pinterest.com/v5/oauth/token', http_build_query( [
 			'grant_type'         => 'authorization_code',
 			'code'               => $code,
 			'redirect_uri'       => $redirect_pi,
@@ -353,7 +354,7 @@ if ( $setup ) {
 	}
 
 	if ( $setup === 'reddit' && $code ) {
-		$r    = social_curl( 'https://www.reddit.com/api/v1/access_token', http_build_query( [
+		$r = social_curl( 'https://www.reddit.com/api/v1/access_token', http_build_query( [
 			'grant_type'   => 'authorization_code',
 			'code'         => $code,
 			'redirect_uri' => $redirect_rd,
@@ -370,7 +371,7 @@ if ( $setup ) {
 			echo '<br>Reddit refresh token: ' . $data['refresh_token'];
 			echo '<br>Save the refresh token. Run ?setup=reddit_refresh&key=KEY to get a new access token without re-authorizing.';
 		}
-		$r  = social_curl( 'https://oauth.reddit.com/api/v1/me', null, [
+		$r = social_curl( 'https://oauth.reddit.com/api/v1/me', null, [
 			'Authorization: Bearer ' . $data['access_token'],
 			'User-Agent: web:social.php:1.0',
 		] );
@@ -381,7 +382,7 @@ if ( $setup ) {
 
 	if ( $setup === 'reddit_refresh' ) {
 		if ( !$rd_refresh_token ) { echo 'No refresh token set in social.php.'; exit; }
-		$r    = social_curl( 'https://www.reddit.com/api/v1/access_token', http_build_query( [
+		$r = social_curl( 'https://www.reddit.com/api/v1/access_token', http_build_query( [
 			'grant_type'    => 'refresh_token',
 			'refresh_token' => $rd_refresh_token,
 		] ), [
@@ -443,8 +444,19 @@ function post_to_instagram( $args ) {
 	] ), [ 'Content-Type: application/json' ] );
 	$data = json_decode( $r['body'], true );
 	if ( empty( $data['id'] ) ) { social_log( 'Instagram', $r['status'], $r['body'] ); return; }
+	$container_id = $data['id'];
+	$ready        = false;
+	for ( $i = 0; $i < 10; $i++ ) {
+		sleep( 3 );
+		$s    = social_curl( 'https://graph.facebook.com/v25.0/' . $container_id . '?fields=status_code&access_token=' . $ig_access_token );
+		$sd   = json_decode( $s['body'], true );
+		$code = $sd['status_code'] ?? '';
+		if ( $code === 'FINISHED' ) { $ready = true; break; }
+		if ( $code === 'ERROR' || $code === 'EXPIRED' ) { social_log( 'Instagram', 0, 'Container ' . $code . ': ' . $s['body'] ); return; }
+	}
+	if ( !$ready ) { social_log( 'Instagram', 0, 'Container did not finish processing after 30 seconds.' ); return; }
 	$r = social_curl( $base . '/media_publish', json_encode( [
-		'creation_id'  => $data['id'],
+		'creation_id'  => $container_id,
 		'access_token' => $ig_access_token,
 	] ), [ 'Content-Type: application/json' ] );
 	social_log( 'Instagram', $r['status'], $r['body'] );
@@ -457,20 +469,58 @@ function post_to_linkedin( $args ) {
 	if ( $li_org_id ) social_linkedin_post( $args, 'urn:li:organization:' . $li_org_id );
 }
 
+function social_linkedin_upload_image( $image_url, $author_urn ) {
+	global $li_access_token;
+	$ch = curl_init( $image_url );
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+	curl_setopt( $ch, CURLOPT_TIMEOUT, 15 );
+	$img_body = curl_exec( $ch );
+	curl_close( $ch );
+	if ( !$img_body ) return null;
+	$headers = [
+		'Authorization: Bearer ' . $li_access_token,
+		'Content-Type: application/json',
+		'LinkedIn-Version: ' . gmdate( 'Y' ) . '01',
+		'X-Restli-Protocol-Version: 2.0.0',
+	];
+	$init = social_curl( 'https://api.linkedin.com/rest/images?action=initializeUpload', json_encode( [
+		'initializeUploadRequest' => [ 'owner' => $author_urn ],
+	] ), $headers );
+	$init_d = json_decode( $init['body'], true );
+	if ( empty( $init_d['value']['uploadUrl'] ) || empty( $init_d['value']['image'] ) ) return null;
+	$ch = curl_init( $init_d['value']['uploadUrl'] );
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+	curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, 'PUT' );
+	curl_setopt( $ch, CURLOPT_POSTFIELDS, $img_body );
+	curl_setopt( $ch, CURLOPT_TIMEOUT, 30 );
+	curl_setopt( $ch, CURLOPT_HTTPHEADER, [
+		'Authorization: Bearer ' . $li_access_token,
+		'Content-Type: application/octet-stream',
+	] );
+	curl_exec( $ch );
+	curl_close( $ch );
+	return $init_d['value']['image'];
+}
+
 function social_linkedin_post( $args, $author_urn ) {
 	global $li_access_token;
-	$r     = social_curl( 'https://api.linkedin.com/rest/posts', json_encode( [
-		'author'                    => $author_urn,
-		'commentary'                => $args['text'],
-		'visibility'                => 'PUBLIC',
-		'distribution'              => [
+	$post = [
+		'author'       => $author_urn,
+		'commentary'   => $args['text'],
+		'visibility'   => 'PUBLIC',
+		'distribution' => [
 			'feedDistribution'               => 'MAIN_FEED',
 			'targetEntities'                 => [],
 			'thirdPartyDistributionChannels' => [],
 		],
 		'lifecycleState'            => 'PUBLISHED',
 		'isReshareDisabledByAuthor' => false,
-	] ), [
+	];
+	if ( !empty( $args['image_url'] ) ) {
+		$image_urn = social_linkedin_upload_image( $args['image_url'], $author_urn );
+		if ( $image_urn ) $post['content'] = [ 'media' => [ 'id' => $image_urn ] ];
+	}
+	$r = social_curl( 'https://api.linkedin.com/rest/posts', json_encode( $post ), [
 		'Authorization: Bearer ' . $li_access_token,
 		'Content-Type: application/json',
 		'LinkedIn-Version: ' . gmdate( 'Y' ) . '01',
@@ -484,7 +534,7 @@ function post_to_pinterest( $args ) {
 	global $pi_app_id, $pi_app_secret, $pi_access_token, $pi_refresh_token, $pi_board_id;
 	if ( !$pi_access_token || !$pi_board_id || !$args['image_url'] ) return;
 	if ( $pi_refresh_token ) {
-		$r    = social_curl( 'https://api.pinterest.com/v5/oauth/token', http_build_query( [
+		$r = social_curl( 'https://api.pinterest.com/v5/oauth/token', http_build_query( [
 			'grant_type'    => 'refresh_token',
 			'refresh_token' => $pi_refresh_token,
 		] ), [
@@ -532,7 +582,7 @@ function post_to_x( $args ) {
 	global $x_api_key, $x_api_secret, $x_access_token, $x_access_secret;
 	if ( !$x_api_key || !$x_access_token ) return;
 	$url   = 'https://api.twitter.com/2/tweets';
-	$body  = json_encode( [ 'text' => $args['url'] ?: $args['text'] ] );
+	$body  = json_encode( [ 'text' => $args['text'] ?: $args['url'] ] );
 	$oauth = [
 		'oauth_consumer_key'     => $x_api_key,
 		'oauth_nonce'            => bin2hex( random_bytes( 16 ) ),

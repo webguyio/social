@@ -11,6 +11,22 @@ Platform-specific notes apply to both unless marked otherwise.
 
 ---
 
+## Requirements
+
+**SimpleShare plugin:**
+- WordPress 5.0 or later
+- PHP 7.2 or later
+- PHP Sodium extension (bundled with PHP 7.2+, must be enabled)
+- PHP cURL extension (must be enabled)
+
+**social.php:**
+- PHP 7.1 or later
+- PHP cURL extension (must be enabled)
+
+Both tools require a publicly accessible website URL. Staging sites, localhost, and password-protected sites will cause failures on most platforms.
+
+---
+
 ## Before You Start
 
 Each platform requires you to register as a developer and create an app. This is a one-time setup per platform. Once complete, the app lives permanently in your developer account and the credentials never change (with some exceptions noted per platform).
