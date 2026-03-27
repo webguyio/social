@@ -14,7 +14,7 @@ Platform-specific notes apply to both unless marked otherwise.
 ## Requirements
 
 **SimpleShare plugin:**
-- WordPress 5.0 or later
+- WordPress 5.3 or later
 - PHP 7.2 or later
 - PHP Sodium extension (bundled with PHP 7.2+, must be enabled)
 - PHP cURL extension (must be enabled)
@@ -528,12 +528,12 @@ X returns 403 for duplicate content even when the post technically succeeds, alw
 
 ### SimpleShare plugin
 
-1. Enable logging on the **Auto-Post** tab
+1. Enable logging on the **Posting** tab
 2. Publish a test post (or use **Reset Last Posted** on the Log tab to re-trigger the most recent post)
 3. Wait 1–2 minutes (the plugin defers posting by 1 minute after publish)
 4. Check the **Log** tab for results
 
-To test without waiting, use the broadcast field on the **Auto-Post** tab to send a custom message immediately to all connected platforms.
+To test without waiting, use the broadcast field on the **Posting** tab to send a custom message immediately to all connected platforms.
 
 X will return 403 for duplicate content if you test the same post URL twice. Use a different test post or check the log response body rather than the status code alone (a 403 from X on duplicate content still means the post was received).
 

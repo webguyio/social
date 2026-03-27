@@ -582,7 +582,7 @@ function post_to_x( $args ) {
 	global $x_api_key, $x_api_secret, $x_access_token, $x_access_secret;
 	if ( !$x_api_key || !$x_access_token ) return;
 	$url   = 'https://api.twitter.com/2/tweets';
-	$body  = json_encode( [ 'text' => $args['text'] ?: $args['url'] ] );
+	$body  = json_encode( [ 'text' => $args['url'] ?: $args['text'] ] );
 	$oauth = [
 		'oauth_consumer_key'     => $x_api_key,
 		'oauth_nonce'            => bin2hex( random_bytes( 16 ) ),
