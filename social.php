@@ -107,8 +107,8 @@ if ( !$setup && SOCIAL_KEY && $key === SOCIAL_KEY ) {
 		'facebook'  => [ 'label' => 'Facebook',  'needs_image' => false, 'needs_url' => false, 'connected' => $fb_access_token && $fb_page_id ],
 		'instagram' => [ 'label' => 'Instagram', 'needs_image' => true,  'needs_url' => false, 'connected' => $ig_user_id && $ig_access_token ],
 		'linkedin'  => [ 'label' => 'LinkedIn',  'needs_image' => false, 'needs_url' => false, 'connected' => $li_access_token ],
-		'pinterest' => [ 'label' => 'Pinterest', 'needs_image' => true,  'needs_url' => true,  'connected' => $pi_access_token && $pi_board_id ],
-		'reddit'    => [ 'label' => 'Reddit',    'needs_image' => false, 'needs_url' => true,  'connected' => $rd_access_token && $rd_subreddit ],
+		'pinterest' => [ 'label' => 'Pinterest', 'needs_image' => true,  'needs_url' => false, 'connected' => $pi_access_token && $pi_board_id ],
+		'reddit'    => [ 'label' => 'Reddit',    'needs_image' => false, 'needs_url' => false, 'connected' => $rd_access_token && $rd_subreddit ],
 		'x'         => [ 'label' => 'X',         'needs_image' => false, 'needs_url' => false, 'connected' => $x_api_key && $x_access_token ],
 	];
 	$connected = array_filter( $platforms, fn( $p ) => $p['connected'] );
@@ -424,12 +424,17 @@ function social_log( $label, $status, $response ) {
 function post_to_facebook( $args ) {
 	global $fb_page_id, $fb_access_token;
 	if ( !$fb_page_id || !$fb_access_token ) return;
-	$payload = $args['url'] ? [ 'link' => $args['url'] ] : [ 'message' => $args['text'] ];
-	$r       = social_curl(
-		'https://graph.facebook.com/v25.0/' . $fb_page_id . '/feed',
-		json_encode( array_merge( $payload, [ 'access_token' => $fb_access_token ] ) ),
-		[ 'Content-Type: application/json' ]
-	);
+	if ( !empty( $args['image_url'] ) && empty( $args['url'] ) ) {
+		$payload  = [ 'url' => $args['image_url'], 'message' => $args['text'], 'access_token' => $fb_access_token ];
+		$endpoint = 'https://graph.facebook.com/v25.0/' . $fb_page_id . '/photos';
+	} elseif ( !empty( $args['url'] ) ) {
+		$payload  = [ 'link' => $args['url'], 'access_token' => $fb_access_token ];
+		$endpoint = 'https://graph.facebook.com/v25.0/' . $fb_page_id . '/feed';
+	} else {
+		$payload  = [ 'message' => $args['text'], 'access_token' => $fb_access_token ];
+		$endpoint = 'https://graph.facebook.com/v25.0/' . $fb_page_id . '/feed';
+	}
+	$r = social_curl( $endpoint, json_encode( $payload ), [ 'Content-Type: application/json' ] );
 	social_log( 'Facebook', $r['status'], $r['body'] );
 }
 
@@ -548,13 +553,14 @@ function post_to_pinterest( $args ) {
 			social_log( 'Pinterest', 0, 'Token refreshed.' );
 		}
 	}
-	$r = social_curl( 'https://api.pinterest.com/v5/pins', json_encode( [
+	$pin = array_filter( [
 		'board_id'     => $pi_board_id,
 		'title'        => $args['title'],
 		'description'  => $args['excerpt'],
-		'link'         => $args['url'],
+		'link'         => $args['url'] ?: null,
 		'media_source' => [ 'source_type' => 'image_url', 'url' => $args['image_url'] ],
-	] ), [
+	], fn( $v ) => $v !== null );
+	$r = social_curl( 'https://api.pinterest.com/v5/pins', json_encode( $pin ), [
 		'Authorization: Bearer ' . $pi_access_token,
 		'Content-Type: application/json',
 	] );
@@ -563,14 +569,13 @@ function post_to_pinterest( $args ) {
 
 function post_to_reddit( $args ) {
 	global $rd_access_token, $rd_subreddit, $rd_username;
-	if ( !$rd_access_token || !$rd_subreddit || !$args['url'] ) return;
-	$r = social_curl( 'https://oauth.reddit.com/api/submit', http_build_query( [
-		'sr'       => $rd_subreddit,
-		'kind'     => 'link',
-		'title'    => $args['title'] ?: $args['text'],
-		'url'      => $args['url'],
-		'resubmit' => 'true',
-	] ), [
+	if ( !$rd_access_token || !$rd_subreddit ) return;
+	if ( !empty( $args['url'] ) ) {
+		$body = http_build_query( [ 'sr' => $rd_subreddit, 'kind' => 'link', 'title' => $args['title'] ?: $args['text'], 'url' => $args['url'], 'resubmit' => 'true' ] );
+	} else {
+		$body = http_build_query( [ 'sr' => $rd_subreddit, 'kind' => 'self', 'title' => $args['title'] ?: $args['text'], 'text' => $args['text'] ] );
+	}
+	$r = social_curl( 'https://oauth.reddit.com/api/submit', $body, [
 		'Authorization: Bearer ' . $rd_access_token,
 		'User-Agent: web:social.php:1.0 (by /u/' . $rd_username . ')',
 		'Content-Type: application/x-www-form-urlencoded',
@@ -578,11 +583,8 @@ function post_to_reddit( $args ) {
 	social_log( 'Reddit', $r['status'], $r['body'] );
 }
 
-function post_to_x( $args ) {
+function social_x_oauth_header( $endpoint ) {
 	global $x_api_key, $x_api_secret, $x_access_token, $x_access_secret;
-	if ( !$x_api_key || !$x_access_token ) return;
-	$url   = 'https://api.twitter.com/2/tweets';
-	$body  = json_encode( [ 'text' => $args['url'] ?: $args['text'] ] );
 	$oauth = [
 		'oauth_consumer_key'     => $x_api_key,
 		'oauth_nonce'            => bin2hex( random_bytes( 16 ) ),
@@ -594,14 +596,43 @@ function post_to_x( $args ) {
 	$base_params = $oauth;
 	ksort( $base_params );
 	$param_string             = http_build_query( $base_params, '', '&', PHP_QUERY_RFC3986 );
-	$base_string              = 'POST&' . rawurlencode( $url ) . '&' . rawurlencode( $param_string );
+	$base_string              = 'POST&' . rawurlencode( $endpoint ) . '&' . rawurlencode( $param_string );
 	$signing_key              = rawurlencode( $x_api_secret ) . '&' . rawurlencode( $x_access_secret );
 	$oauth['oauth_signature'] = base64_encode( hash_hmac( 'sha1', $base_string, $signing_key, true ) );
 	ksort( $oauth );
 	$parts = [];
 	foreach ( $oauth as $k => $v ) $parts[] = rawurlencode( $k ) . '="' . rawurlencode( $v ) . '"';
+	return 'OAuth ' . implode( ', ', $parts );
+}
+
+function social_x_upload_media( $image_url ) {
+	$ch = curl_init( $image_url );
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+	curl_setopt( $ch, CURLOPT_TIMEOUT, 15 );
+	$img_body = curl_exec( $ch );
+	curl_close( $ch );
+	if ( !$img_body ) return null;
+	$upload_url = 'https://upload.twitter.com/1/media/upload';
+	$r          = social_curl( $upload_url, 'media_data=' . rawurlencode( base64_encode( $img_body ) ), [
+		'Authorization: ' . social_x_oauth_header( $upload_url ),
+		'Content-Type: application/x-www-form-urlencoded',
+	] );
+	$data = json_decode( $r['body'], true );
+	return $data['media_id_string'] ?? null;
+}
+
+function post_to_x( $args ) {
+	global $x_api_key, $x_access_token;
+	if ( !$x_api_key || !$x_access_token ) return;
+	$url   = 'https://api.twitter.com/2/tweets';
+	$tweet = [ 'text' => $args['url'] ?: $args['text'] ];
+	if ( !empty( $args['image_url'] ) && empty( $args['url'] ) ) {
+		$media_id = social_x_upload_media( $args['image_url'] );
+		if ( $media_id ) $tweet['media'] = [ 'media_ids' => [ $media_id ] ];
+	}
+	$body  = json_encode( $tweet );
 	$r = social_curl( $url, $body, [
-		'Authorization: OAuth ' . implode( ', ', $parts ),
+		'Authorization: ' . social_x_oauth_header( $url ),
 		'Content-Type: application/json',
 	] );
 	social_log( 'X', $r['status'], $r['body'] );

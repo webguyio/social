@@ -11,6 +11,22 @@ Platform-specific notes apply to both unless marked otherwise.
 
 ---
 
+## What Gets Posted
+
+🟢 Yes &nbsp; 🟡 Maybe &nbsp; ⚪ No
+
+| Platform | Caption | Link | Image | Preview Card | Caption | Link | Image | Preview Card |
+|----------|---------|------|-------|--------------|---------|------|-------|--------------|
+| | **Auto Post** | | | | **Manual Post** | | | |
+| Facebook | ⚪ link only, no caption | 🟢 links to post | ⚪ from post content | 🟢 from post content | 🟡 if no link | 🟡 link only, disables caption/image | 🟡 if no link | 🟡 if link |
+| Instagram | 🟢 title + summary + link | 🟢 in caption, not clickable | 🟢 featured image required | ⚪ no preview cards | 🟢 message as caption | ⚪ links not supported | 🟢 image required | ⚪ no preview cards |
+| LinkedIn | 🟢 title + summary + link | 🟢 in caption, clickable | 🟡 featured image or default | ⚪ no preview cards | 🟢 message as caption | ⚪ add link in caption | 🟡 if image | ⚪ no preview cards |
+| Pinterest | 🟢 title + summary | 🟢 pin links to post | 🟢 featured image required | ⚪ no preview cards | 🟢 message as pin title | 🟡 if link | 🟢 image required | ⚪ no preview cards |
+| Reddit | 🟢 post title only | 🟢 link post | 🟡 from linked post | ⚪ no preview cards | 🟢 message as post title | 🟡 with or without link | 🟡 if link | ⚪ no preview cards |
+| X | ⚪ link only, no caption | 🟢 links to post | ⚪ from post content | 🟢 from post content | 🟡 if no link | 🟡 link only, disables caption/image | 🟡 if no link | 🟡 if link |
+
+---
+
 ## Requirements
 
 **SimpleShare plugin:**
